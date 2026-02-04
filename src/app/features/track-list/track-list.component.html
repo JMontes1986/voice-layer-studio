@@ -1,0 +1,165 @@
+<div class="track-list-container">
+  <!-- Mixdown Section -->
+  <div class="mixdown-section" *ngIf="mixdown">
+    <div class="section-title">
+      <span class="icon">🎵</span>
+      <h3>Mezcla Final (Mixdown)</h3>
+    </div>
+    
+    <div class="mixdown-card">
+      <div class="mixdown-info">
+        <div class="info-item">
+          <span class="label">Duración:</span>
+          <span class="value">{{ formatDuration(mixdown.duration_ms) }}</span>
+        </div>
+        <div class="info-item">
+          <span class="label">Tamaño:</span>
+          <span class="value">{{ formatFileSize(mixdown.size_bytes) }}</span>
+        </div>
+        <div class="info-item">
+          <span class="label">Formato:</span>
+          <span class="value">WAV</span>
+        </div>
+      </div>
+
+      <div class="mixdown-player">
+        <audio 
+          [src]="getTrackUrl(mixdown)"
+          controls
+          preload="metadata"
+          class="audio-player"></audio>
+      </div>
+
+      <button 
+        (click)="downloadMixdown()"
+        class="btn-download">
+        <span class="icon">⬇️</span>
+        Descargar Mixdown
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading Mixdown -->
+  <div class="loading-mixdown" *ngIf="isLoadingMixdown && !mixdown">
+    <div class="spinner"></div>
+    <p>Cargando mixdown...</p>
+  </div>
+
+  <!-- Tracks Section -->
+  <div class="tracks-section">
+    <div class="section-header">
+      <div class="section-title">
+        <span class="icon">🎙️</span>
+        <h3>Pistas Grabadas</h3>
+        <span class="track-count" *ngIf="tracks.length > 0">({{ tracks.length }})</span>
+      </div>
+
+      <button 
+        *ngIf="tracks.length > 1"
+        (click)="playAllTracks()"
+        class="btn-play-all"
+        [disabled]="isPlayingMix"
+        [class.playing]="isPlayingMix">
+        <span class="icon">{{ isPlayingMix ? '⏸️' : '▶️' }}</span>
+        {{ isPlayingMix ? 'Reproduciendo...' : 'Reproducir Todas' }}
+      </button>
+    </div>
+
+    <!-- Stats Summary -->
+    <div class="stats-summary" *ngIf="tracks.length > 0">
+      <div class="stat-item">
+        <span class="stat-label">Total:</span>
+        <span class="stat-value">{{ getTotalDuration() }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Tamaño:</span>
+        <span class="stat-value">{{ getTotalSize() }}</span>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading && tracks.length === 0" class="loading">
+      <div class="spinner"></div>
+      <p>Cargando pistas...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="tracks.length === 0 && !isLoading" class="empty-state">
+      <div class="empty-icon">🎤</div>
+      <h4>No hay grabaciones aún</h4>
+      <p>Usa el grabador de arriba para añadir tu primera pista</p>
+    </div>
+
+    <!-- Track Grid -->
+    <div class="track-grid" *ngIf="tracks.length > 0">
+      <div 
+        *ngFor="let track of tracks; let i = index" 
+        class="track-card"
+        [class.deleting]="isDeleting">
+        
+        <div class="track-header">
+          <div class="track-number">
+            <span class="hash">#</span>{{ tracks.length - i }}
+          </div>
+          
+          <div class="track-date">
+            <span class="icon">🕒</span>
+            {{ formatDate(track.created_at) }}
+          </div>
+          
+          <button 
+            (click)="deleteTrack(track)"
+            class="btn-delete"
+            [disabled]="isDeleting"
+            title="Eliminar track">
+            🗑️
+          </button>
+        </div>
+
+        <div class="track-info">
+          <div class="info-badge">
+            <span class="icon">⏱️</span>
+            {{ formatDuration(track.duration_ms) }}
+          </div>
+          <div class="info-badge">
+            <span class="icon">💾</span>
+            {{ formatFileSize(track.size_bytes) }}
+          </div>
+          <div class="info-badge">
+            <span class="icon">🎵</span>
+            {{ track.mime_type.split('/')[1].toUpperCase() }}
+          </div>
+        </div>
+
+        <div class="track-player">
+          <audio 
+            [src]="getTrackUrl(track)"
+            controls
+            preload="metadata"
+            class="audio-player"></audio>
+        </div>
+      </div>
+    </div>
+
+    <!-- Load More Button -->
+    <button 
+      *ngIf="hasMore && tracks.length > 0"
+      (click)="loadMore()"
+      class="btn-load-more"
+      [disabled]="isLoading">
+      <span *ngIf="!isLoading">Cargar Más</span>
+      <span *ngIf="isLoading" class="loading-text">
+        <span class="spinner-small"></span>
+        Cargando...
+      </span>
+    </button>
+
+    <!-- Deleting Overlay -->
+    <div *ngIf="isDeleting" class="deleting-overlay">
+      <div class="deleting-content">
+        <div class="spinner"></div>
+        <p>Eliminando y recalculando mixdown...</p>
+      </div>
+    </div>
+  </div>
+</div>
