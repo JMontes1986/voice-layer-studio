@@ -1,0 +1,108 @@
+<div class="recorder-container">
+  <div class="recorder-card">
+    <h2>Grabar Audio</h2>
+
+    <!-- Error Message -->
+    <div *ngIf="errorMessage" class="error-message" (click)="clearError()">
+      <span class="error-icon">⚠️</span>
+      <span class="error-text">{{ errorMessage }}</span>
+      <button class="error-close">✕</button>
+    </div>
+
+    <!-- Duration Display -->
+    <div class="duration-display" [class.recording]="recordingState.isRecording">
+      {{ formatDuration(recordingState.duration) }}
+    </div>
+
+    <div class="controls">
+      <!-- Start Recording -->
+      <button 
+        *ngIf="!recordingState.isRecording && !recordingState.blob"
+        (click)="startRecording()"
+        class="btn btn-primary btn-large"
+        [disabled]="isUploading">
+        <span class="icon">🎙️</span>
+        Iniciar Grabación
+      </button>
+
+      <!-- Recording Controls -->
+      <div *ngIf="recordingState.isRecording" class="recording-controls">
+        <button 
+          *ngIf="!recordingState.isPaused"
+          (click)="pauseRecording()"
+          class="btn btn-secondary">
+          <span class="icon">⏸️</span>
+          Pausar
+        </button>
+
+        <button 
+          *ngIf="recordingState.isPaused"
+          (click)="resumeRecording()"
+          class="btn btn-secondary">
+          <span class="icon">▶️</span>
+          Continuar
+        </button>
+
+        <button 
+          (click)="stopRecording()"
+          class="btn btn-danger">
+          <span class="icon">⏹️</span>
+          Detener
+        </button>
+      </div>
+
+      <!-- Preview & Upload -->
+      <div *ngIf="recordingState.blob && !recordingState.isRecording" class="preview-controls">
+        <div class="preview-label">
+          <span class="icon">🎵</span>
+          Vista previa
+        </div>
+        
+        <audio 
+          [src]="recordingState.blob | blob"
+          controls
+          class="audio-preview"></audio>
+
+        <div class="action-buttons">
+          <button 
+            (click)="uploadRecording()"
+            class="btn btn-success"
+            [disabled]="isUploading">
+            <span *ngIf="!isUploading" class="icon">✅</span>
+            <span *ngIf="isUploading" class="spinner-small"></span>
+            {{ isUploading ? 'Subiendo... ' + uploadProgress + '%' : 'Guardar Track' }}
+          </button>
+
+          <button 
+            (click)="discardRecording()"
+            class="btn btn-outline"
+            [disabled]="isUploading">
+            <span class="icon">🗑️</span>
+            Descartar
+          </button>
+        </div>
+
+        <!-- Upload Progress Bar -->
+        <div *ngIf="isUploading" class="progress-bar">
+          <div class="progress-fill" [style.width.%]="uploadProgress"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recording Indicator -->
+    <div *ngIf="recordingState.isRecording && !recordingState.isPaused" class="recording-indicator">
+      <span class="pulse"></span>
+      Grabando...
+    </div>
+
+    <div *ngIf="recordingState.isPaused" class="paused-indicator">
+      <span class="icon">⏸️</span>
+      Pausado
+    </div>
+
+    <!-- Session Info -->
+    <div class="session-info">
+      <small>Sesión: {{ sessionId.substring(0, 8) }}...</small>
+    </div>
+  </div>
+</div>
